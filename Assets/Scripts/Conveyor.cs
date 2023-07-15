@@ -1,27 +1,33 @@
 using System.Collections;
 using UnityEngine;
+using Zenject;
 
 public class Conveyor : MonoBehaviour
 {
+    [Inject] TaskHandler _taskHandler;
     public Transform FirstPoint;
     public Transform SecondPoint;
 
-    [Range(.1f,1f)] public float Speed;
+    [Range(1f,5f)] public float Speed;
 
     [SerializeField] private Material _material;
     private float value = 0;
     private void Start()
     {
         value = 0;
-        StartCoroutine(PlusValue(Speed / 1000f));
+        Speed /= 1000f;
+        _taskHandler.OnResultGame += InactiveConveyor;
     }
-    private IEnumerator PlusValue(float iteration)
+    private void FixedUpdate()
     {
-        while(true)
+        value += Speed;
+        _material.SetTextureOffset("_MainTex", new Vector2(-value, 0));
+    }
+    private void InactiveConveyor(bool isWin)
+    {
+        if(isWin)
         {
-            yield return new WaitForSeconds(iteration);
-            value += iteration;
-            _material.SetTextureOffset("_MainTex", new Vector2(-value, 0));
+            gameObject.SetActive(false);
         }
     }
 }
